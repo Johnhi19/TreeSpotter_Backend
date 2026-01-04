@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Johnhi19/TreeSpotter_backend/models"
 	_ "github.com/go-sql-driver/mysql"
@@ -26,17 +27,22 @@ func Connect() {
 	)
 
 	var err error
-	DB, err = sql.Open("mysql", dsn)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	// Test the connection
-	if err := DB.Ping(); err != nil {
-		log.Fatal(err)
-	}
+	// Try to connect multiple times with delays
+	for i := 1; i <= 30; i++ {
+		DB, err = sql.Open("mysql", dsn)
+		if err == nil {
+			err = DB.Ping()
+		}
 
-	fmt.Println("Connected to MySQL!")
+		if err == nil {
+			log.Println("Connected to MySQL!")
+			return
+		}
+
+		log.Printf("Waiting for DB... (%d/30): %v\n", i, err)
+		time.Sleep(2 * time.Second)
+	}
 }
 
 func FindAllMeadowsForUser(userID int) []models.Meadow {
