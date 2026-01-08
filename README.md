@@ -11,7 +11,7 @@ For local development:
 ## Usage with docker
 It is recommended to run the complete application. For that check the README.md of the main [Treespotter](https://github.com/Johnhi19/TreeSpotter) application. 
 
-If you want to build and run the backend by its own, it can be done like this:
+If you want only want to build and run the backend, it can be done like this:
 
 ```bash
 # Build the image
