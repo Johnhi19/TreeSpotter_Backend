@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"database/sql"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -37,7 +36,6 @@ func Register(c *gin.Context) {
 	var exists string
 	err := database.DB.QueryRow("SELECT username FROM users WHERE username = ?", user.Username).Scan(&exists)
 	if err != sql.ErrNoRows && err != nil {
-		log.Println("REGISTER ERROR:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 		return
 	}
@@ -46,16 +44,27 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// Check if email exists
+	err = database.DB.QueryRow("SELECT email FROM users WHERE email = ?", user.Email).Scan(&exists)
+	if err != sql.ErrNoRows && err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+	if exists != "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email already registered"})
+		return
+	}
+
 	// Hash password
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 
 	// Insert into DB
 	_, err = database.DB.Exec(
-		"INSERT INTO users (username, password) VALUES (?, ?)",
+		"INSERT INTO users (username, password, email) VALUES (?, ?, ?)",
 		user.Username,
 		string(hashed),
+		user.Email,
 	)
-
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
