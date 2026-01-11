@@ -28,7 +28,7 @@ func Register(c *gin.Context) {
 
 	// Ensure DB is connected
 	if database.DB == nil {
-		c.JSON(500, gin.H{"error": "database not initialized"})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": "DATABASE_ISSUE", "error": "database not initialized"})
 		return
 	}
 
@@ -36,22 +36,22 @@ func Register(c *gin.Context) {
 	var exists string
 	err := database.DB.QueryRow("SELECT username FROM users WHERE username = ?", user.Username).Scan(&exists)
 	if err != sql.ErrNoRows && err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": "DATABASE_ISSUE", "error": "Database error"})
 		return
 	}
 	if exists != "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Username already taken"})
+		c.JSON(http.StatusBadRequest, gin.H{"code": "USERNAME_TAKEN", "error": "Username already taken"})
 		return
 	}
 
 	// Check if email exists
 	err = database.DB.QueryRow("SELECT email FROM users WHERE email = ?", user.Email).Scan(&exists)
 	if err != sql.ErrNoRows && err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": "DATABASE_ISSUE", "error": "Database error"})
 		return
 	}
 	if exists != "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Email already registered"})
+		c.JSON(http.StatusBadRequest, gin.H{"code": "EMAIL_TAKEN", "error": "Email already registered"})
 		return
 	}
 
@@ -66,7 +66,7 @@ func Register(c *gin.Context) {
 		user.Email,
 	)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": "DATABASE_ISSUE", "error": "Failed to create user"})
 		return
 	}
 
@@ -87,7 +87,7 @@ func Login(c *gin.Context) {
 
 	// Ensure DB is connected
 	if database.DB == nil {
-		c.JSON(500, gin.H{"error": "database not initialized"})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": "DATABASE_ISSUE", "error": "database not initialized"})
 		return
 	}
 
@@ -98,13 +98,13 @@ func Login(c *gin.Context) {
 	).Scan(&stored.ID, &stored.Username, &stored.Password)
 
 	if err == sql.ErrNoRows || err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"code": "INVALID_CREDENTIALS", "error": "Invalid username or password"})
 		return
 	}
 
 	// Compare password
 	if bcrypt.CompareHashAndPassword([]byte(stored.Password), []byte(user.Password)) != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"code": "INVALID_CREDENTIALS", "error": "Invalid username or password"})
 		return
 	}
 
@@ -116,7 +116,7 @@ func Login(c *gin.Context) {
 
 	tokenString, err := token.SignedString(jwtSecret)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Token creation failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": "UNKNOWN_ERROR", "error": "Token creation failed"})
 		return
 	}
 
