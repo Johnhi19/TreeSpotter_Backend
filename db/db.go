@@ -280,6 +280,20 @@ func UpdateMeadowForUser(meadow models.Meadow, userID int) {
 	fmt.Printf("Successfully updated meadow %d\n", meadow.ID)
 }
 
+func UpdateTreeForUser(tree models.Tree, userID int) {
+
+	result, err := DB.Exec("UPDATE trees SET PlantDate = ?, Position = ?, Type = ? WHERE ID = ? AND user_id = ?",
+		tree.PlantDate, tree.Position, tree.Type, tree.ID, userID)
+	if err != nil {
+		panic(err)
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	fmt.Printf("UPDATE affected %d rows\n", rowsAffected)
+
+	fmt.Printf("Successfully updated tree %d\n", tree.ID)
+}
+
 // Deletes only the tree from the database, does not update meadow's TreeIds
 func deleteTreeOnly(treeId int, userID int) error {
 	result, err := DB.Exec("DELETE FROM trees WHERE ID = ? AND user_id = ?", treeId, userID)

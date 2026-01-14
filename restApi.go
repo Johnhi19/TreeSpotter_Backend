@@ -230,3 +230,22 @@ func updateMeadow(c *gin.Context) {
 		"message": "Meadow updated successfully",
 	})
 }
+
+func updateTree(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	var tree models.Tree
+
+	// Bind the JSON body to the tree struct
+	if err := c.ShouldBindJSON(&tree); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Update the tree
+	db.UpdateTreeForUser(tree, userID)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Tree updated successfully",
+	})
+}
