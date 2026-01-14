@@ -266,6 +266,20 @@ func UpdateMeadowTreeIdsForUser(meadowId int, treeId int64, shouldDelete bool, u
 	return nil
 }
 
+func UpdateMeadowForUser(meadow models.Meadow, userID int) {
+
+	result, err := DB.Exec("UPDATE meadows SET Location = ?, Name = ?, Size = ? WHERE ID = ? AND user_id = ?",
+		meadow.Location, meadow.Name, meadow.Size, meadow.ID, userID)
+	if err != nil {
+		panic(err)
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	fmt.Printf("UPDATE affected %d rows\n", rowsAffected)
+
+	fmt.Printf("Successfully updated meadow %d\n", meadow.ID)
+}
+
 // Deletes only the tree from the database, does not update meadow's TreeIds
 func deleteTreeOnly(treeId int, userID int) error {
 	result, err := DB.Exec("DELETE FROM trees WHERE ID = ? AND user_id = ?", treeId, userID)

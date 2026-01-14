@@ -211,3 +211,22 @@ func removeTree(c *gin.Context) {
 		"id":      intID,
 	})
 }
+
+func updateMeadow(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	var meadow models.Meadow
+
+	// Bind the JSON body to the meadow struct
+	if err := c.ShouldBindJSON(&meadow); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Update the meadow
+	db.UpdateMeadowForUser(meadow, userID)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Meadow updated successfully",
+	})
+}
