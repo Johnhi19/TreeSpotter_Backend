@@ -58,6 +58,36 @@ func main() {
 	db.Disconnect()
 }
 
+func findMeadowByID(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	meadowId := c.Param("id")
+
+	intMeadowID, err := strconv.Atoi(meadowId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
+	meadow := db.FindOneMeadowByIdForUser(intMeadowID, userID)
+	c.IndentedJSON(http.StatusOK, meadow)
+}
+
+func findTreeByID(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	treeId := c.Param("id")
+
+	intTreeID, err := strconv.Atoi(treeId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
+	tree := db.FindOneTreeById(intTreeID, userID)
+	c.IndentedJSON(http.StatusOK, tree)
+}
+
 func getBasicInfoOfAllMeadows(c *gin.Context) {
 	userID := c.GetInt("user_id")
 
@@ -98,49 +128,6 @@ func insertMeadow(c *gin.Context) {
 	})
 }
 
-func removeMeadow(c *gin.Context) {
-	userID := c.GetInt("user_id")
-
-	// Get meadow ID from URL parameter
-	meadowId := c.Param("id")
-	intMeadowID, err := strconv.Atoi(meadowId)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
-		return
-	}
-
-	fmt.Printf("Attempting to delete meadow with ID: %d\n", intMeadowID)
-
-	// Delete the meadow (which also updates the trees)
-	if err := db.DeleteOneMeadowForUser(intMeadowID, userID); err != nil {
-		fmt.Printf("ERROR deleting meadow: %v\n", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	fmt.Printf("Meadow %d deleted successfully\n", intMeadowID)
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Meadow deleted successfully",
-		"id":      intMeadowID,
-	})
-}
-
-func findMeadowByID(c *gin.Context) {
-	userID := c.GetInt("user_id")
-
-	meadowId := c.Param("id")
-
-	intMeadowID, err := strconv.Atoi(meadowId)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
-		return
-	}
-
-	meadow := db.FindOneMeadowByIdForUser(intMeadowID, userID)
-	c.IndentedJSON(http.StatusOK, meadow)
-}
-
 func insertTree(c *gin.Context) {
 	var tree models.Tree
 
@@ -166,6 +153,34 @@ func insertTree(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Tree inserted successfully",
 		"id":      insertedID,
+	})
+}
+
+func removeMeadow(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	// Get meadow ID from URL parameter
+	meadowId := c.Param("id")
+	intMeadowID, err := strconv.Atoi(meadowId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
+	fmt.Printf("Attempting to delete meadow with ID: %d\n", intMeadowID)
+
+	// Delete the meadow (which also updates the trees)
+	if err := db.DeleteOneMeadowForUser(intMeadowID, userID); err != nil {
+		fmt.Printf("ERROR deleting meadow: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	fmt.Printf("Meadow %d deleted successfully\n", intMeadowID)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Meadow deleted successfully",
+		"id":      intMeadowID,
 	})
 }
 
@@ -195,19 +210,4 @@ func removeTree(c *gin.Context) {
 		"message": "Tree deleted successfully",
 		"id":      intID,
 	})
-}
-
-func findTreeByID(c *gin.Context) {
-	userID := c.GetInt("user_id")
-
-	treeId := c.Param("id")
-
-	intTreeID, err := strconv.Atoi(treeId)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
-		return
-	}
-
-	tree := db.FindOneTreeById(intTreeID, userID)
-	c.IndentedJSON(http.StatusOK, tree)
 }
