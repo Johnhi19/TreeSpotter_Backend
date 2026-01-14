@@ -33,6 +33,9 @@ func main() {
 	protected := router.Group("/")
 	protected.Use(middleware.AuthMiddleware())
 	{
+		protected.DELETE("/trees/:id", removeTree)
+		protected.DELETE("/meadows/:id", removeMeadow)
+
 		protected.GET("/meadows/:id", findMeadowByID)
 		protected.GET("/meadows", getBasicInfoOfAllMeadows)
 		protected.GET("/meadows/:id/trees", getTreesOfMeadow)
@@ -41,8 +44,8 @@ func main() {
 		protected.POST("/meadows", insertMeadow)
 		protected.POST("/trees", insertTree)
 
-		protected.DELETE("/trees/:id", removeTree)
-		protected.DELETE("/meadows/:id", removeMeadow)
+		protected.PUT("/meadows/:id", updateMeadow)
+		protected.PUT("/trees/:id", updateTree)
 	}
 
 	go func() {
