@@ -36,7 +36,7 @@ func Register(c *gin.Context) {
 	var exists string
 	err := database.DB.QueryRow("SELECT username FROM users WHERE username = ?", user.Username).Scan(&exists)
 	if err != sql.ErrNoRows && err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": "DATABASE_ISSUE", "error": "Database error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": "DATABASE_ISSUE", "error": "Database error when checking username"})
 		return
 	}
 	if exists != "" {
@@ -47,7 +47,7 @@ func Register(c *gin.Context) {
 	// Check if email exists
 	err = database.DB.QueryRow("SELECT email FROM users WHERE email = ?", user.Email).Scan(&exists)
 	if err != sql.ErrNoRows && err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": "DATABASE_ISSUE", "error": "Database error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": "DATABASE_ISSUE", "error": "Database error when checking email"})
 		return
 	}
 	if exists != "" {
