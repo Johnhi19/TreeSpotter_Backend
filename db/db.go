@@ -294,6 +294,17 @@ func UpdateTreeForUser(tree models.Tree, userID int) {
 	fmt.Printf("Successfully updated tree %d\n", tree.ID)
 }
 
+func UploadImageDb(path string, description string, userID int, treeID int) error {
+	_, err := DB.Exec("INSERT INTO images (path, description, user_id, tree_id) VALUES (?, ?, ?, ?)",
+		path, description, userID, treeID)
+	if err != nil {
+		return fmt.Errorf("failed to upload image to database: %w", err)
+	}
+
+	fmt.Printf("Uploaded image for user %d with path: %s\n", userID, path)
+	return nil
+}
+
 // Deletes only the tree from the database, does not update meadow's TreeIds
 func deleteTreeOnly(treeId int, userID int) error {
 	result, err := DB.Exec("DELETE FROM trees WHERE ID = ? AND user_id = ?", treeId, userID)
