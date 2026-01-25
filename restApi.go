@@ -43,6 +43,7 @@ func main() {
 
 		protected.POST("/meadows", insertMeadow)
 		protected.POST("/trees", insertTree)
+		protected.POST("trees/:id/uploadImage", uploadImage)
 
 		protected.PUT("/meadows/:id", updateMeadow)
 		protected.PUT("/trees/:id", updateTree)
@@ -250,5 +251,38 @@ func updateTree(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Tree updated successfully",
+	})
+}
+
+func uploadImage(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	treeId := c.Param("id")
+
+	intTreeID, err := strconv.Atoi(treeId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
+	description := c.PostForm("description")
+
+	file := handlers.UploadImageHandler(c.Writer, c.Request)
+	if file == nil {
+		return
+	}
+
+	// Optionally, you can store the image info in the database
+	err = db.UploadImageDb(file.Name(), description, userID, intTreeID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save image info to database"})
+		return
+	}
+
+	fmt.Printf("User %d uploaded file: %s\n", userID, file.Name())
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Image uploaded successfully",
+		"path":    file.Name(),
 	})
 }
