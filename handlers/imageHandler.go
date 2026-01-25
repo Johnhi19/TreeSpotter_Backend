@@ -10,7 +10,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var uploadPath = os.Getenv("UPLOAD_PATH")
+// set the upload path inside the container
+var uploadPath = "./uploads"
 
 func UploadImageHandler(w http.ResponseWriter, r *http.Request) *os.File {
 	// Limit file size to 10MB. This line saves you from those accidental 100MB uploads!
