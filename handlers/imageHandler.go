@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -40,12 +41,13 @@ func UploadImageHandler(w http.ResponseWriter, r *http.Request) *os.File {
 		return nil
 	}
 
-	fmt.Fprintf(w, "Uploaded File: %s\n", handler.Filename)
-	fmt.Fprintf(w, "File Size: %d\n", handler.Size)
-	fmt.Fprintf(w, "MIME Header: %v\n", handler.Header)
+	// Build timestamped filename while preserving extension
+	ext := filepath.Ext(handler.Filename)
+	base := time.Now().UnixNano()
+	newName := fmt.Sprintf("%d%s", base, ext)
 
 	// Now let’s save it locally
-	dst, err := createFile(handler.Filename)
+	dst, err := createFile(newName)
 	if err != nil {
 		fmt.Println("Error creating file:", err)
 		http.Error(w, "Error creating the file", http.StatusInternalServerError)
@@ -54,13 +56,13 @@ func UploadImageHandler(w http.ResponseWriter, r *http.Request) *os.File {
 	defer dst.Close()
 
 	// Copy the uploaded file to the destination file
-	if _, err := dst.ReadFrom(file); err != nil {
+	if _, err := dst.Write(fileBytes); err != nil {
 		fmt.Println("Error copying file:", err)
 		http.Error(w, "Error saving the file", http.StatusInternalServerError)
 		return nil
 	}
 
-	fmt.Printf("Successfully saved file: %s\n", handler.Filename)
+	fmt.Printf("Successfully saved file: %s\n", newName)
 	return dst
 }
 
