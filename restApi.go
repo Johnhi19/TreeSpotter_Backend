@@ -22,6 +22,9 @@ func main() {
 
 	router := gin.Default()
 
+	// Serve images statically
+	router.Static("/uploads", "./uploads")
+
 	// Public (no auth)
 	public := router.Group("/")
 	{
@@ -40,6 +43,7 @@ func main() {
 		protected.GET("/meadows", getBasicInfoOfAllMeadows)
 		protected.GET("/meadows/:id/trees", getTreesOfMeadow)
 		protected.GET("/trees/:id", findTreeByID)
+		protected.GET("/trees/:id/images", getTreeImages)
 
 		protected.POST("/meadows", insertMeadow)
 		protected.POST("/trees", insertTree)
@@ -252,6 +256,25 @@ func updateTree(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Tree updated successfully",
 	})
+}
+
+func getTreeImages(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	treeId := c.Param("id")
+
+	intTreeID, err := strconv.Atoi(treeId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
+	images := db.GetTreeImageDb(intTreeID, userID)
+
+	fmt.Printf("Successfully retrieved %d images for user %d and tree %d\n", len(images), userID, intTreeID)
+
+	c.JSON(http.StatusOK, images)
+
 }
 
 func uploadImage(c *gin.Context) {
