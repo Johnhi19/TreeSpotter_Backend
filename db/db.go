@@ -199,6 +199,30 @@ func FindOneTreeById(treeId int, userID int) models.Tree {
 	return tree
 }
 
+func GetTreeImageDb(treeID int, userID int) []models.Image {
+	var images []models.Image
+
+	rows, err := DB.Query("SELECT id, path, description, datetime FROM images WHERE tree_id = ? AND user_id = ?", treeID, userID)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var img models.Image
+		if err := rows.Scan(&img.ID, &img.Path, &img.Description, &img.Datetime); err != nil {
+			panic(err)
+		}
+		images = append(images, img)
+	}
+
+	if err := rows.Err(); err != nil {
+		panic(err)
+	}
+
+	return images
+}
+
 func InsertOneMeadowForUser(meadow models.Meadow, userID int) any {
 	result, err := DB.Exec("INSERT INTO meadows (Location, Name, Size, TreeIds, user_id) VALUES (?, ?, ?, ?, ?)",
 		meadow.Location, meadow.Name, meadow.Size, meadow.TreeIds, userID)
