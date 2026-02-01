@@ -39,6 +39,7 @@ func main() {
 	{
 		protected.DELETE("/trees/:id", removeTree)
 		protected.DELETE("/meadows/:id", removeMeadow)
+		protected.DELETE("/trees/images/:imageId", removeTreeImage)
 
 		protected.GET("/meadows/:id", findMeadowByID)
 		protected.GET("/meadows", getBasicInfoOfAllMeadows)
@@ -219,6 +220,34 @@ func removeTree(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Tree deleted successfully",
 		"id":      intID,
+	})
+}
+
+func removeTreeImage(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	// Get tree ID from URL parameter
+	imageId := c.Param("imageId")
+	intID, err := strconv.Atoi(imageId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Image ID format"})
+		return
+	}
+
+	fmt.Printf("Attempting to delete image with ID: %d\n", intID)
+
+	// Delete the image
+	if err := db.DeleteTreeImage(intID, userID); err != nil {
+		fmt.Printf("ERROR deleting image: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	fmt.Printf("Image %d deleted successfully\n", intID)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Image deleted successfully",
+		"imageId": intID,
 	})
 }
 
