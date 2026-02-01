@@ -106,6 +106,39 @@ func DeleteOneTreeForUser(treeId int, userID int) error {
 	return nil
 }
 
+func DeleteTreeImage(imageID int, userID int) error {
+	var filePath string
+	err := DB.QueryRow("SELECT path FROM images WHERE id = ? AND user_id = ?", imageID, userID).Scan(&filePath)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve image path: %w", err)
+	}
+
+	// Delete the image file from the filesystem
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return fmt.Errorf("file does not exist: %s", filePath)
+	}
+
+	// Delete the file
+	if err := os.Remove(filePath); err != nil {
+		return fmt.Errorf("failed to delete file: %w", err)
+	}
+
+	fmt.Printf("Successfully deleted file: %s\n", filePath)
+
+	result, err := DB.Exec("DELETE FROM images WHERE id = ? AND user_id = ?", imageID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to delete image: %w", err)
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("no image found with ID %d and user ID %d", imageID, userID)
+	}
+
+	fmt.Printf("Deleted image for user %d with ID: %d\n", userID, imageID)
+	return nil
+}
+
 func FindAllMeadowsForUser(userID int) []models.Meadow {
 	var meadows []models.Meadow
 
