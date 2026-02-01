@@ -213,6 +213,8 @@ func GetTreeImageDb(treeID int, userID int) []models.Image {
 		if err := rows.Scan(&img.ID, &img.Path, &img.Description, &img.Datetime); err != nil {
 			panic(err)
 		}
+		// update path to include leading slash
+		img.Path = fmt.Sprintf("/%s", img.Path)
 		images = append(images, img)
 	}
 
@@ -316,6 +318,38 @@ func UpdateTreeForUser(tree models.Tree, userID int) {
 	fmt.Printf("UPDATE affected %d rows\n", rowsAffected)
 
 	fmt.Printf("Successfully updated tree %d\n", tree.ID)
+}
+
+func UpdateTreeImageDescriptionDb(imageID int, description string, userID int) error {
+	result, err := DB.Exec("UPDATE images SET description = ? WHERE id = ? AND user_id = ?",
+		description, imageID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to update image description: %w", err)
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("no image found with ID %d and user ID %d", imageID, userID)
+	}
+
+	fmt.Printf("Updated image description for image %d\n", imageID)
+	return nil
+}
+
+func UpdateTreeImageDatetimeDb(imageID int, datetime time.Time, userID int) error {
+	result, err := DB.Exec("UPDATE images SET datetime = ? WHERE id = ? AND user_id = ?",
+		datetime, imageID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to update image datetime: %w", err)
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("no image found with ID %d and user ID %d", imageID, userID)
+	}
+
+	fmt.Printf("Updated image datetime for image %d\n", imageID)
+	return nil
 }
 
 func UploadImageDb(path string, description string, userID int, treeID int) error {
