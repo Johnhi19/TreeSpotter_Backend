@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/Johnhi19/TreeSpotter_backend/db"
 	"github.com/Johnhi19/TreeSpotter_backend/handlers"
@@ -51,6 +52,7 @@ func main() {
 
 		protected.PUT("/meadows/:id", updateMeadow)
 		protected.PUT("/trees/:id", updateTree)
+		protected.PUT("/trees/images/:imageId", updateTreeImage)
 	}
 
 	go func() {
@@ -256,6 +258,39 @@ func updateTree(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Tree updated successfully",
 	})
+}
+
+func updateTreeImage(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	imageId := c.Param("imageId")
+	intImageID, err := strconv.Atoi(imageId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
+	newDescription := c.PostForm("newDescription")
+	newDatetime := c.PostForm("newDatetime")
+
+	if newDescription != "null" {
+		db.UpdateTreeImageDescriptionDb(intImageID, newDescription, userID)
+	} else if newDatetime != "null" {
+		parsedTime, err := time.Parse(time.RFC3339, newDatetime)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid datetime format"})
+			return
+		}
+		db.UpdateTreeImageDatetimeDb(intImageID, parsedTime, userID)
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No valid fields to update"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Image updated successfully",
+	})
+
 }
 
 func getTreeImages(c *gin.Context) {
