@@ -360,6 +360,8 @@ func UpdateTreeImageDescriptionDb(imageID int, description string, userID int) e
 		return fmt.Errorf("failed to update image description: %w", err)
 	}
 
+	fmt.Printf("Executing UPDATE for image %d with new description: %s\n", imageID, description)
+
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected == 0 {
 		return fmt.Errorf("no image found with ID %d and user ID %d", imageID, userID)
@@ -375,6 +377,8 @@ func UpdateTreeImageDatetimeDb(imageID int, datetime time.Time, userID int) erro
 	if err != nil {
 		return fmt.Errorf("failed to update image datetime: %w", err)
 	}
+
+	fmt.Printf("Executing UPDATE for image %d with new datetime: %s\n", imageID, datetime.String())
 
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected == 0 {
