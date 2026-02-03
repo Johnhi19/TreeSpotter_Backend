@@ -302,9 +302,12 @@ func updateTreeImage(c *gin.Context) {
 	newDescription := c.PostForm("newDescription")
 	newDatetime := c.PostForm("newDatetime")
 
-	if newDescription != "null" {
+	fmt.Printf("Updating image %d: newDescription=%s, newDatetime=%s\n", intImageID, newDescription, newDatetime)
+
+	if newDescription != "" {
+		fmt.Printf("Updating image %d description to: %s\n", intImageID, newDescription)
 		db.UpdateTreeImageDescriptionDb(intImageID, newDescription, userID)
-	} else if newDatetime != "null" {
+	} else if newDatetime != "" {
 		parsedTime, err := time.Parse(time.RFC3339, newDatetime)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid datetime format"})
