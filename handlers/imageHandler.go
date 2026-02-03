@@ -67,11 +67,6 @@ func UploadImageHandler(w http.ResponseWriter, r *http.Request) *os.File {
 }
 
 func createFile(filename string) (*os.File, error) {
-	// Ensure the upload directory exists
-	if err := os.MkdirAll(uploadPath, 0755); err != nil {
-		return nil, fmt.Errorf("failed to create upload directory: %w", err)
-	}
-
 	// Build the file path and create it
 	dst, err := os.Create(filepath.Join(uploadPath, filename))
 	if err != nil {
