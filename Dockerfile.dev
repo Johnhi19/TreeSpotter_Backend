@@ -10,6 +10,9 @@ COPY . .
 # download dependencies
 RUN go mod download
 
+# create uploads directory and set permissions
+RUN rm -rf /app/uploads && mkdir -p /app/uploads && chmod -R 766 /app/uploads
+
 # Expose port 8080
 EXPOSE 8080
 
